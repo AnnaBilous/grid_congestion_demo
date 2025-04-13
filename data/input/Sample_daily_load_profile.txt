@@ -1,0 +1,26 @@
+# Sample daily household load profile with explanations
+Hour	Load (kW)	Activity
+00:00	0.3	Sleeping (fridge, standby devices)
+01:00	0.3	—
+02:00	0.3	—
+03:00	0.3	—
+04:00	0.4	Early heating cycle starts
+05:00	0.5	Some households wake up
+06:00	0.8	Shower, kitchen use
+07:00	1.2	Breakfast, coffee machine, appliances
+08:00	0.9	Still at home, then leaving
+09:00	0.5	House empty, base load only
+10:00	0.4	—
+11:00	0.4	—
+12:00	0.5	Lunch break, some return home
+13:00	0.5	—
+14:00	0.5	—
+15:00	0.6	Kids home, light appliance use
+16:00	0.8	Start cooking prep
+17:00	1.4	Cooking, heating, lights
+18:00	1.6	Peak: dinner, TV, laundry, dishwashers
+19:00	1.2	Continued high use
+20:00	1.0	Tapering off
+21:00	0.8	Lights, entertainment
+22:00	0.6	Wind down
+23:00	0.4	Bedtime, back to base load
