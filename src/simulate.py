@@ -8,13 +8,39 @@ def model_load_profiles_realistic(hours=24, idle_consumption=0.3,
                                  evening_peak_height=1.5, evening_peak_width=1.8, 
                                  evening_decay_time=3.0):
     """
-    Generate realistic load profile with four components:
-    A) Constant idle consumption
-    B) Morning peak (Gaussian around 7am)
-    C) Midday peak (Gaussian around 12pm)
-    D) Evening peak (Gaussian multiplied by exponential decay, wrapping around midnight)
+    Generate a realistic residential electricity load profile.
     
-    Returns hourly load profile for 24 hours
+    Creates a 24-hour load profile by combining four components:
+    - Constant base/idle load
+    - Morning peak (typically breakfast time)
+    - Midday peak (lunch time)
+    - Evening peak with asymmetric decay (dinner and evening activities)
+    
+    Parameters
+    ----------
+    hours : int, default=24
+        Number of hours in the profile
+    idle_consumption : float, default=0.3
+        Base load in kW that's constant throughout the day
+    morning_peak_height : float, default=1.0
+        Height of morning peak in kW
+    morning_peak_width : float, default=1.5
+        Width (standard deviation) of morning peak in hours
+    midday_peak_height : float, default=0.7
+        Height of midday peak in kW
+    midday_peak_width : float, default=2.0
+        Width (standard deviation) of midday peak in hours
+    evening_peak_height : float, default=1.5
+        Height of evening peak in kW
+    evening_peak_width : float, default=1.8
+        Width (standard deviation) of evening peak in hours
+    evening_decay_time : float, default=3.0
+        Decay time constant for evening peak in hours
+        
+    Returns
+    -------
+    numpy.ndarray
+        Hourly load profile values in kW
     """
     # Time points (hours)
     t = np.arange(hours)
@@ -60,8 +86,25 @@ def model_load_profiles_realistic(hours=24, idle_consumption=0.3,
 
 def generate_hourly_load_profiles_realistic(house_ids, hours=24, seed=None):
     """
-    Generate synthetic hourly load profiles for each house.
-    Returns a pandas DataFrame indexed by house_id.
+    Generate synthetic hourly load profiles for multiple houses.
+    
+    Creates realistic load profiles with random variations for each house,
+    simulating different household behaviors and consumption patterns.
+    
+    Parameters
+    ----------
+    house_ids : list
+        List of house identifiers
+    hours : int, default=24
+        Number of hours in each profile
+    seed : int, optional
+        Random seed for reproducibility
+        
+    Returns
+    -------
+    pandas.DataFrame
+        DataFrame with houses as rows and hourly loads as columns.
+        Index is house_id and columns are hour_0 through hour_23.
     """
     if seed is not None:
         np.random.seed(seed)
@@ -100,12 +143,26 @@ def save_load_profiles(load_df, output_path, prefix='house', start_id=1, transfo
     """
     Save load profiles to CSV with customizable labeling.
     
-    Args:
-        load_df: DataFrame with load profiles
-        output_path: Path to save CSV file
-        prefix: Prefix for house IDs (default: 'house')
-        start_id: Starting ID number (default: 1)
-        transformer_id: Optional transformer ID to include in filename
+    Exports the load profiles DataFrame to a CSV file with options to
+    customize the naming and add transformer information.
+    
+    Parameters
+    ----------
+    load_df : pandas.DataFrame
+        DataFrame containing load profiles
+    output_path : str
+        Directory path where the CSV file will be saved
+    prefix : str, default='house'
+        Prefix for house IDs in the index
+    start_id : int, default=1
+        Starting ID number for houses
+    transformer_id : str, optional
+        Transformer ID to include in filename and as a column
+        
+    Returns
+    -------
+    str
+        Full path to the saved CSV file
     """
     # Create a copy to avoid modifying the original
     df_save = load_df.copy()

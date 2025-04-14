@@ -1,7 +1,6 @@
 # Add to imports
 import pymc as pm
 import arviz as az
-import xarray as xr
 import os
 import numpy as np
 import pandas as pd
@@ -16,21 +15,36 @@ HOURS = 24
 TRANSFORMER_CAPACITY = 125  # kW
 TRANSFORMER_ID = "TR_001"
 DATA_DIR = "data/generated"
+PLOTS_DIR = "data/plots"
 RESULTS_FILE = f"{DATA_DIR}/monte_carlo_results.csv"
-N_SIMULATIONS = 10
+N_SIMULATIONS = 100
 
+os.makedirs(DATA_DIR, exist_ok=True)
+os.makedirs(PLOTS_DIR, exist_ok=True)
 
 
 def run_bayesian_congestion_model(results_df, n_samples=1000):
     """
-    Build a Bayesian model to predict congestion probability based on EV and PV counts
+    Build a Bayesian model to predict congestion probability based on EV and PV adoption.
     
-    Args:
-        results_df: DataFrame with simulation results
-        n_samples: Number of samples for MCMC
+    Creates a probabilistic model that relates electric vehicle and solar PV
+    adoption rates to grid congestion risk, accounting for uncertainty.
     
-    Returns:
-        Inference data object with posterior samples and standardization parameters
+    Parameters
+    ----------
+    results_df : pandas.DataFrame
+        DataFrame containing Monte Carlo simulation results with columns:
+        'n_ev', 'n_pv', and 'congestion_probability'
+    n_samples : int, default=1000
+        Number of posterior samples to draw using MCMC
+        
+    Returns
+    -------
+    tuple
+        (idata, ev_mean, ev_std, pv_mean, pv_std) where:
+        - idata: ArviZ InferenceData object containing posterior samples
+        - ev_mean, ev_std: Standardization parameters for EV counts
+        - pv_mean, pv_std: Standardization parameters for PV counts
     """
     # Extract data
     n_ev = results_df['n_ev'].values
@@ -66,8 +80,36 @@ def run_bayesian_congestion_model(results_df, n_samples=1000):
     # Return both the inference data and standardization parameters
     return idata, ev_mean, ev_std, pv_mean, pv_std
 
-def plot_bayesian_contour(idata, results_df, ev_mean, ev_std, pv_mean, pv_std, output_dir=DATA_DIR):
-    """Plot contour map of congestion probability from Bayesian model"""
+def plot_bayesian_contour(idata, results_df, ev_mean, ev_std, pv_mean, pv_std, plot_name=None):
+    """
+    Plot contour map of congestion probability from Bayesian model.
+    
+    Creates a visualization of the predicted congestion probability across
+    different EV and PV adoption levels, with uncertainty represented through
+    contour lines.
+    
+    Parameters
+    ----------
+    idata : arviz.InferenceData
+        ArviZ InferenceData object containing posterior samples
+    results_df : pandas.DataFrame
+        DataFrame with original Monte Carlo simulation results
+    ev_mean : float
+        Mean value used for standardizing EV counts
+    ev_std : float
+        Standard deviation used for standardizing EV counts
+    pv_mean : float
+        Mean value used for standardizing PV counts
+    pv_std : float
+        Standard deviation used for standardizing PV counts
+    plot_name : str, optional
+        If provided, save the plot to this path instead of displaying
+        
+    Returns
+    -------
+    None
+        Either displays the plot or saves it to file
+    """
     # Create prediction grid for smooth surface
     ev_range = np.linspace(0, results_df['n_ev'].max(), 100)
     pv_range = np.linspace(0, results_df['n_pv'].max(), 100)
@@ -121,51 +163,50 @@ def plot_bayesian_contour(idata, results_df, ev_mean, ev_std, pv_mean, pv_std, o
     plt.grid(True, linestyle='--', alpha=0.7)
     
     plt.tight_layout()
-    plt.savefig(f"{output_dir}/bayesian_contour.png", dpi=300)
-    plt.show()
+    if plot_name:
+        plt.savefig(plot_name)
+    else:
+        plt.show()
 
-def main():
-    # Check if results file exists
-    if not os.path.exists(RESULTS_FILE):
-        print(f"Results file {RESULTS_FILE} not found. Run monte_carlo_congestion_simulation.py first.")
-        return
-    
-    # Load results
-    results = pd.read_csv(RESULTS_FILE)
-    print(f"Loaded results with {len(results)} scenarios")
-    
-    # Run Bayesian model
-    print("\nRunning Bayesian model...")
-    idata, ev_mean, ev_std, pv_mean, pv_std = run_bayesian_congestion_model(results)
-    
-    # Summarize posterior
-    print("\nBayesian Model Summary:")
-    print(az.summary(idata))
-    
-    # Plot posterior distributions for specific parameters
-    az.plot_posterior(idata, var_names=['alpha', 'beta_ev', 'beta_pv', 'sigma'])
-    plt.suptitle("Posterior Distributions")
-    plt.tight_layout()
-    plt.savefig(f"{DATA_DIR}/bayesian_posterior.png")
-    plt.show()
-    
-    # Plot contour map
-    plot_bayesian_contour(idata, results, ev_mean, ev_std, pv_mean, pv_std)
-    
-    # Calculate and print effect sizes
-    posterior = idata.posterior
-    beta_ev = posterior['beta_ev'].values.flatten()
-    beta_pv = posterior['beta_pv'].values.flatten()
-    
-    print("\nEffect Sizes:")
-    print(f"EV effect (mean): {beta_ev.mean():.4f}")
-    print(f"EV effect (95% CI): [{np.percentile(beta_ev, 2.5):.4f}, {np.percentile(beta_ev, 97.5):.4f}]")
-    print(f"PV effect (mean): {beta_pv.mean():.4f}")
-    print(f"PV effect (95% CI): [{np.percentile(beta_pv, 2.5):.4f}, {np.percentile(beta_pv, 97.5):.4f}]")
-    
-    # Calculate probability that EV effect is greater than PV effect (in absolute terms)
-    prob_ev_greater = np.mean(np.abs(beta_ev) > np.abs(beta_pv))
-    print(f"Probability |EV effect| > |PV effect|: {prob_ev_greater:.4f}")
 
-if __name__ == "__main__":
-    main()
+# Check if results file exists
+if not os.path.exists(RESULTS_FILE):
+    print(f"Results file {RESULTS_FILE} not found. Run monte_carlo_congestion_simulation.py first.")
+    exit(1)
+
+# Load results
+results = pd.read_csv(RESULTS_FILE)
+print(f"Loaded results with {len(results)} scenarios")
+
+# Run Bayesian model
+print("\nRunning Bayesian model...")
+idata, ev_mean, ev_std, pv_mean, pv_std = run_bayesian_congestion_model(results)
+
+# Summarize posterior
+print("\nBayesian Model Summary:")
+print(az.summary(idata))
+
+# Plot posterior distributions for specific parameters
+az.plot_posterior(idata, var_names=['alpha', 'beta_ev', 'beta_pv', 'sigma'])
+plt.suptitle("Posterior Distributions")
+plt.tight_layout()
+plt.savefig(f"{PLOTS_DIR}/8_Bayesian_posterior_distributions.png")
+plt.show()
+
+# Plot contour map
+plot_bayesian_contour(idata, results, ev_mean, ev_std, pv_mean, pv_std, plot_name=f"{PLOTS_DIR}/9_Bayesian_contour_map.png")
+
+# Calculate and print effect sizes
+posterior = idata.posterior
+beta_ev = posterior['beta_ev'].values.flatten()
+beta_pv = posterior['beta_pv'].values.flatten()
+
+print("\nEffect Sizes:")
+print(f"EV effect (mean): {beta_ev.mean():.4f}")
+print(f"EV effect (95% CI): [{np.percentile(beta_ev, 2.5):.4f}, {np.percentile(beta_ev, 97.5):.4f}]")
+print(f"PV effect (mean): {beta_pv.mean():.4f}")
+print(f"PV effect (95% CI): [{np.percentile(beta_pv, 2.5):.4f}, {np.percentile(beta_pv, 97.5):.4f}]")
+
+# Calculate probability that EV effect is greater than PV effect (in absolute terms)
+prob_ev_greater = np.mean(np.abs(beta_ev) > np.abs(beta_pv))
+print(f"Probability |EV effect| > |PV effect|: {prob_ev_greater:.4f}")

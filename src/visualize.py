@@ -4,14 +4,43 @@ import numpy as np
 
 def compute_total_load(load_df):
     """
-    Sum all household loads for each hour.
-    Returns a Series with total load per hour.
+    Calculate the total load across all households for each hour.
+    
+    Sums the electricity consumption of all houses at each time point
+    to determine the aggregate load on the transformer.
+    
+    Parameters
+    ----------
+    load_df : pandas.DataFrame
+        DataFrame with houses as rows and hourly loads as columns
+        
+    Returns
+    -------
+    pandas.Series
+        Series containing the total load for each hour
     """
     return load_df.sum(axis=0)
 
-def plot_total_load(total_load, transformer_capacity=150):
+def plot_total_load(total_load, transformer_capacity=150, plot_name=None):
     """
-    Plot total load against transformer capacity.
+    Plot total grid load against transformer capacity.
+    
+    Creates a visualization showing the aggregate load profile and
+    the transformer capacity threshold to identify potential congestion.
+    
+    Parameters
+    ----------
+    total_load : pandas.Series
+        Series containing total load for each hour
+    transformer_capacity : float, default=150
+        Transformer capacity in kW
+    plot_name : str, optional
+        If provided, save the plot to this path instead of displaying
+        
+    Returns
+    -------
+    None
+        Either displays the plot or saves it to file
     """
     plt.figure(figsize=(10, 4))
     total_load.plot(label='Total Load', marker='o')
@@ -22,37 +51,36 @@ def plot_total_load(total_load, transformer_capacity=150):
     plt.legend()
     plt.grid(True)
     plt.tight_layout()
-    plt.show()
+    if plot_name:
+        plt.savefig(plot_name)
+    else:
+        plt.show()
 
-def plot_house_load(load_df, house_id):
+
+
+def plot_all_houses(load_df, sample_size=None, offset=0.7, plot_name=None):
     """
-    Plot load profile for a specific house.
+    Plot load profiles for all houses in a stacked visualization.
     
-    Args:
-        load_df: DataFrame with load profiles
-        house_id: ID of house to plot
-    """
-    if house_id not in load_df.index:
-        raise ValueError(f"House ID {house_id} not found in data")
+    Creates a stacked area chart showing individual house load profiles
+    and the average profile to visualize consumption patterns. The visualization
+    style is inspired by Joy Division's "Unknown Pleasures" album cover.
+    
+    Parameters
+    ----------
+    load_df : pandas.DataFrame
+        DataFrame with houses as rows and hourly loads as columns
+    sample_size : int, optional
+        Number of houses to randomly sample (None for all houses)
+    offset : float, default=0.7
+        Vertical spacing between house profiles
+    plot_name : str, optional
+        If provided, save the plot to this path instead of displaying
         
-    plt.figure(figsize=(10, 4))
-    load_df.loc[house_id].plot(marker='o')
-    plt.title(f'Load Profile for {house_id}')
-    plt.xlabel('Hour of Day')
-    plt.ylabel('Load (kW)')
-    plt.grid(True)
-    plt.xticks(range(24), [f'{h}:00' for h in range(24)])
-    plt.tight_layout()
-    plt.show()
-
-def plot_all_houses(load_df, sample_size=None, alpha=0.3, offset=0.7):
-    """
-    Plot load profiles for all houses on the same graph.
-    
-    Args:
-        load_df: DataFrame with load profiles
-        sample_size: Optional number of houses to sample (None for all)
-        alpha: Transparency level for individual house lines
+    Returns
+    -------
+    None
+        Either displays the plot or saves it to file
     """
     plt.figure(figsize=(6, 12))
     hours = range(24)
@@ -67,26 +95,33 @@ def plot_all_houses(load_df, sample_size=None, alpha=0.3, offset=0.7):
     plt.subplot2grid((10,1), (1,0), rowspan=9)
     # Plot each house
     offset_cur = 0
+    zorder = 100
     for house in plot_df.index:
-        plt.plot(hours, plot_df.loc[house] + offset_cur, color='w')
-        plt.fill_between(hours, offset_cur,plot_df.loc[house] + offset_cur, color='0.5')
+        plt.plot(hours, plot_df.loc[house] + offset_cur, color='w', lw=5, zorder=zorder)
+        plt.fill_between(hours, offset_cur,plot_df.loc[house] + offset_cur, color='0.2', zorder=zorder)
         offset_cur += offset
+        zorder -= 1
         
     plt.xticks(hours[::2], [f'{h}:00' for h in hours[::2]])
-    
+    plt.xlim(0, 24)
+    plt.yticks([])
+    plt.ylabel("Individual houses")
     plt.subplot2grid((10,1), (0,0))
     # Plot average
     avg_load = plot_df.mean(axis=0)
     plt.plot(hours, avg_load + offset_cur, 'r-', linewidth=2, label='Average')
     
     plt.xticks(hours[::2], [f'{h}:00' for h in hours[::2]])
+    plt.xlim(0, 24)
     plt.title(f'Load Profiles for {len(plot_df)} Houses')
-    plt.xlabel('Hour of Day')
     plt.ylabel('Load (kW)')
     plt.legend()
     
     plt.tight_layout()
-    plt.show()
+    if plot_name:
+        plt.savefig(plot_name)
+    else:
+        plt.show()
 
 # Example usage
 if __name__ == "__main__":

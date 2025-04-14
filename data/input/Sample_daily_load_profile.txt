@@ -1,4 +1,4 @@
-# Sample daily household load profile with explanations
+# Sample daily household load profile with explanations. Source: ChatGPT
 Hour	Load (kW)	Activity
 00:00	0.3	Sleeping (fridge, standby devices)
 01:00	0.3	—

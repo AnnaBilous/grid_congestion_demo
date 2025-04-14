@@ -15,7 +15,7 @@ The project includes three levels of analysis:
 ### Prerequisites
 
 - Python 3.8+
-- Required packages: numpy, pandas, matplotlib, networkx, pymc, arviz
+- Required packages: numpy, pandas, matplotlib, networkx, pymc, arviz, tqdm
 
 ### Installation
 
@@ -30,22 +30,38 @@ pip install -r requirements.txt
 Run Python scripts:
 
 ```bash
-python simple_congestion_simulation.py
-python monte_carlo_congestion_simulation.py
-python bayesian_congestion_simulation.py
+python python_scripts/simple_congestion_simulation.py
+python python_scripts/monte_carlo_congestion_simulation.py
+python python_scripts/bayesian_congestion_simulation.py
 ```
 
-Or use Jupyter notebooks:
-- simple_congestion_simulation.ipynb
-- monte_carlo_congestion_simulation.ipynb
-- bayesian_congestion_simulation.ipynb -- to be added
+## Project Structure
 
-## Files
+```
+├── python_scripts/              # Main simulation scripts
+│   ├── simple_congestion_simulation.py
+│   ├── monte_carlo_congestion_simulation.py
+│   └── bayesian_congestion_simulation.py
+├── src/                         # Core functionality
+│   ├── grid_model.py            # Grid topology generation
+│   ├── simulate.py              # Load profile simulation
+│   └── visualize.py             # Visualization utilities
+├── data/
+│   ├── generated/               # Simulation outputs
+│   └── input/                   # Input data
+└── README.md
+```
 
-- `simple_congestion_simulation.py`: Basic grid congestion model
-- `monte_carlo_congestion_simulation.py`: Probabilistic simulation across scenarios
-- `bayesian_congestion_simulation.py`: Statistical inference model
-- `data/generated/monte_carlo_results.csv`: Simulation output data
+## Analysis Methods
+
+### Simple Simulation
+Generates a synthetic grid and realistic household load profiles to visualize transformer loading.
+
+### Monte Carlo Simulation
+Runs multiple simulations with random variations to assess congestion probability across different EV and PV adoption scenarios.
+
+### Bayesian Analysis
+Uses probabilistic modeling to quantify uncertainty and infer the relative impact of different technologies on grid congestion.
 
 ## License
 
