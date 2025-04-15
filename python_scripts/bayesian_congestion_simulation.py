@@ -23,7 +23,7 @@ PLOTS_DIR = "data/plots"
 RESULTS_FILE = f"{DATA_DIR}/monte_carlo_results.csv"
 BAYESIAN_RESULTS_FILE = f"{DATA_DIR}/bayesian_results.pkl"
 N_SIMULATIONS = 100
-N_SAMPLES = 4000
+N_SAMPLES = 1000
 
 os.makedirs(DATA_DIR, exist_ok=True)
 os.makedirs(PLOTS_DIR, exist_ok=True)
