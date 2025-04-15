@@ -35,6 +35,12 @@ python python_scripts/monte_carlo_congestion_simulation.py
 python python_scripts/bayesian_congestion_simulation.py
 ```
 
+Or use Jupyter notebooks:
+
+```bash
+jupyter notebook ipython_notebooks/
+```
+
 ## Project Structure
 
 ```
@@ -42,6 +48,10 @@ python python_scripts/bayesian_congestion_simulation.py
 │   ├── simple_congestion_simulation.py
 │   ├── monte_carlo_congestion_simulation.py
 │   └── bayesian_congestion_simulation.py
+├── ipython_notebooks/           # Jupyter notebooks
+│   ├── simple_congestion_simulation.ipynb
+│   ├── monte_carlo_congestion_simulation.ipynb
+│   └── bayesian_congestion_simulation.ipynb
 ├── src/                         # Core functionality
 │   ├── grid_model.py            # Grid topology generation
 │   ├── simulate.py              # Load profile simulation
