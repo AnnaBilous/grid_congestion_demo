@@ -92,26 +92,31 @@ def plot_all_houses(load_df, sample_size=None, offset=0.7, plot_name=None):
     else:
         plot_df = load_df
     
+    # Add hour 24 data (same as hour 0)
+    plot_df_extended = plot_df.copy()
+    plot_df_extended.insert(24, "hour_24", plot_df_extended.iloc[:,0])
+    hours_extended = list(range(25))
+    
     plt.subplot2grid((10,1), (1,0), rowspan=9)
     # Plot each house
     offset_cur = 0
     zorder = 100
-    for house in plot_df.index:
-        plt.plot(hours, plot_df.loc[house] + offset_cur, color='w', lw=5, zorder=zorder)
-        plt.fill_between(hours, offset_cur,plot_df.loc[house] + offset_cur, color='0.2', zorder=zorder)
+    for house in plot_df_extended.index:
+        plt.plot(hours_extended, plot_df_extended.loc[house] + offset_cur, color='w', lw=5, zorder=zorder)
+        plt.fill_between(hours_extended, offset_cur, plot_df_extended.loc[house] + offset_cur, color='0.2', zorder=zorder)
         offset_cur += offset
         zorder -= 1
         
-    plt.xticks(hours[::2], [f'{h}:00' for h in hours[::2]])
+    plt.xticks(hours_extended[::2], [f'{h}:00' for h in hours_extended[::2]])
     plt.xlim(0, 24)
     plt.yticks([])
     plt.ylabel("Individual houses")
     plt.subplot2grid((10,1), (0,0))
     # Plot average
-    avg_load = plot_df.mean(axis=0)
-    plt.plot(hours, avg_load + offset_cur, 'r-', linewidth=2, label='Average')
+    avg_load = plot_df_extended.mean(axis=0)
+    plt.plot(hours_extended, avg_load, 'r-', linewidth=2, label='Average')
     
-    plt.xticks(hours[::2], [f'{h}:00' for h in hours[::2]])
+    plt.xticks(hours_extended[::2], [f'{h}:00' for h in hours_extended[::2]])
     plt.xlim(0, 24)
     plt.title(f'Load Profiles for {len(plot_df)} Houses')
     plt.ylabel('Load (kW)')
