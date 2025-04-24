@@ -41,13 +41,19 @@ Or use Jupyter notebooks:
 jupyter notebook ipython_notebooks/
 ```
 
+Web interface:
+
+```bash
+streamlit run python_scripts/simple_vis_streamlit_app.py
+```
+
 ## Project Structure
 
-```
-├── python_scripts/              # Main simulation scripts
+```├── python_scripts/              # Main simulation scripts
 │   ├── simple_congestion_simulation.py
 │   ├── monte_carlo_congestion_simulation.py
-│   └── bayesian_congestion_simulation.py
+│   ├── bayesian_congestion_simulation.py
+│   └── simple_vis_streamlit_app.py         # Interactive web interface
 ├── ipython_notebooks/           # Jupyter notebooks
 │   ├── simple_congestion_simulation.ipynb
 │   ├── monte_carlo_congestion_simulation.ipynb
@@ -76,4 +82,5 @@ Uses probabilistic modeling to quantify uncertainty and infer the relative impac
 ## License
 
 [MIT License](LICENSE)
+
 
