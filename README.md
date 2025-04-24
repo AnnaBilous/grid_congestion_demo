@@ -47,6 +47,8 @@ Web interface:
 streamlit run python_scripts/simple_vis_streamlit_app.py
 ```
 
+[Direct link to streamlit app](https://annabilous-grid-c-python-scriptssimple-vis-streamlit-app-mqt95x.streamlit.app/)
+
 ## Project Structure
 
 ```├── python_scripts/              # Main simulation scripts
